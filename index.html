@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For My Sayang 💖</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Framer Motion -->
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Custom Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #fff0f5;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+            /* Subtle animated gradient background */
+            background: linear-gradient(-45deg, #fff0f5, #fff5f7, #fdf2f8, #fff0f5);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Envelope Styles */
+        .envelope-wrapper {
+            perspective: 1000px;
+        }
+        .envelope {
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s ease;
+        }
+        
+        .flap {
+            transform-origin: top;
+            transition: transform 0.4s ease 0.2s, z-index 0.2s;
+            backface-visibility: hidden; 
+        }
+        .envelope.open .flap {
+            transform: rotateX(180deg);
+            z-index: 1; 
+        }
+
+        .letter {
+            transition: transform 0.5s ease 0.4s, opacity 0.2s ease 0.4s;
+            opacity: 0; 
+            transform: translateY(0);
+        }
+        .envelope.open .letter {
+            opacity: 1;
+            transform: translateY(-50px) translateZ(2px);
+            z-index: 30; 
+        }
+
+        .pocket {
+            backface-visibility: hidden;
+            z-index: 20; 
+        }
+        .envelope.open .pocket {
+            z-index: 10;
+        }
+
+        /* Falling Roses Animation */
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+        }
+        .falling-rose {
+            position: fixed;
+            top: -10%;
+            z-index: 9999;
+            pointer-events: none;
+            animation-name: fall;
+            animation-timing-function: linear;
+        }
+
+        /* Typing cursor */
+        .typing-cursor::after {
+            content: '|';
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+    </style>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pastelPink: '#FFD1DC',
+                        pastelBlue: '#AEC6CF',
+                        pastelYellow: '#FDFD96',
+                        pastelPurple: '#B39EB5',
+                        warmPeach: '#FFB7B2',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo } = React;
+        const { motion, AnimatePresence } = window.Motion;
+
+        // --- CONFIGURATION ---
+        const IMAGES = {
+            meNormal: "sandy1.jpg",
+            meThinking: "sandy2.jpg",
+            her: "sayang1.jpg",
+            cat: "munchkin1.jpeg",
+            drawing: "tempdraw.png"
+        };
+
+        const VIDEO_SRC = "VID1.mp4";
+
+        const BIBLE_VERSES = [
+            { text: "Love is patient, love is kind. It does not envy, it does not boast, it is not proud.", ref: "1 Corinthians 13:4 (KJV)" },
+            { text: "I have loved thee with an everlasting love: therefore with lovingkindness have I drawn thee.", ref: "Jeremiah 31:3 (KJV)" },
+            { text: "And above all things have fervent charity among yourselves: for charity shall cover the multitude of sins.", ref: "1 Peter 4:8 (KJV)" },
+            { text: "Let all that you do be done in love.", ref: "1 Corinthians 16:14 (KJV)" }
+        ];
+
+        // --- AMBIENT PARTICLES ---
+        const AmbientParticles = () => {
+            const particles = useMemo(() => Array.from({ length: 15 }).map((_, i) => ({
+                id: i,
+                x: Math.random() * 100,
+                y: Math.random() * 100,
+                duration: 10 + Math.random() * 20,
+                delay: Math.random() * 5,
+                scale: 0.5 + Math.random() * 0.5
+            })), []);
+
+            return (
+                <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+                    {particles.map((p) => (
+                        <motion.div
+                            key={p.id}
+                            className="absolute text-pink-200 opacity-30 text-xl"
+                            initial={{ x: `${p.x}vw`, y: '110vh', opacity: 0 }}
+                            animate={{ 
+                                y: '-10vh', 
+                                opacity: [0, 0.4, 0],
+                                rotate: [0, 360] 
+                            }}
+                            transition={{ 
+                                duration: p.duration, 
+                                repeat: Infinity, 
+                                delay: p.delay,
+                                ease: "linear"
+                            }}
+                            style={{ scale: p.scale }}
+                        >
+                            {p.id % 2 === 0 ? '♥' : '✨'}
+                        </motion.div>
+                    ))}
+                </div>
+            );
+        };
+
+        // --- MUSIC PLAYER ---
+        const MusicPlayer = ({ autoPause }) => {
+            const [isPlaying, setIsPlaying] = useState(false);
+            const audioRef = useRef(null);
+
+            useEffect(() => {
+                if (autoPause && isPlaying) {
+                    audioRef.current.pause();
+                    setIsPlaying(false);
+                }
+            }, [autoPause]);
+
+            const togglePlay = () => {
+                if (isPlaying) {
+                    audioRef.current.pause();
+                } else {
+                    audioRef.current.play().catch(e => console.log("Audio play failed (interaction needed)", e));
+                }
+                setIsPlaying(!isPlaying);
+            };
+
+            if (autoPause) return null; // Hide controls when video page is active
+
+            return (
+                <div className="fixed bottom-4 right-4 z-50">
+                    <audio 
+                        ref={audioRef} 
+                        src="glue.mp3"
+                        loop
+                    />
+                    <button 
+                        onClick={togglePlay}
+                        className="bg-white/80 backdrop-blur-sm p-3 rounded-full shadow-lg text-pink-400 hover:text-pink-600 hover:scale-110 transition-all border border-pink-100"
+                        title={isPlaying ? "Pause Music" : "Play Music"}
+                    >
+                        {isPlaying ? (
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                        ) : (
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12 7-12 6z"></path></svg>
+                        )}
+                    </button>
+                </div>
+            );
+        };
+
+        // --- VIDEO PAGE COMPONENT ---
+        const VideoPage = () => {
+            const [stage, setStage] = useState('text'); // 'text', 'video', 'end'
+            const videoRef = useRef(null);
+
+            useEffect(() => {
+                // Intro text timer
+                const timer = setTimeout(() => {
+                    setStage('video');
+                }, 3500); // 3.5s reading time
+                return () => clearTimeout(timer);
+            }, []);
+
+            const handleVideoEnd = () => {
+                setStage('end');
+            };
+
+            return (
+                <div className="fixed inset-0 z-[100] bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center p-6">
+                    <AnimatePresence mode="wait">
+                        
+                        {/* 1. PRE-VIDEO TEXT */}
+                        {stage === 'text' && (
+                            <motion.div
+                                key="pre-text"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 1.5 }}
+                                className="text-center"
+                            >
+                                <p className="text-xl md:text-2xl text-gray-700 font-medium italic tracking-wide">
+                                    “Terakhir… aku pengen ngomong langsung ke kamu.”
+                                </p>
+                            </motion.div>
+                        )}
+
+                        {/* 2. THE VIDEO */}
+                        {(stage === 'video' || stage === 'end') && (
+                            <motion.div
+                                key="video-player"
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 1 }}
+                                className="w-full max-w-md flex flex-col items-center"
+                            >
+                                <div className="w-full bg-black rounded-2xl overflow-hidden shadow-2xl relative">
+                                    <video 
+                                        ref={videoRef}
+                                        className="w-full h-auto"
+                                        controls
+                                        playsInline
+                                        onEnded={handleVideoEnd}
+                                        style={{ display: 'block' }}
+                                    >
+                                        <source src={VIDEO_SRC} type="video/mp4" />
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                                
+                                {/* 3. POST-VIDEO MESSAGE */}
+                                <AnimatePresence>
+                                    {stage === 'end' && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.5, duration: 1 }}
+                                            className="mt-8 text-center"
+                                        >
+                                            <p className="text-gray-600 font-medium text-lg">
+                                                Maaciii yaaa udahh nontonn,<br/>aku harap kamu suka website nyaa :D
+                                            </p>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            );
+        };
+
+        // --- INTRO SEQUENCE ---
+        const IntroSequence = ({ onComplete }) => {
+            const [scene, setScene] = useState(0);
+            const [showRejectPopup, setShowRejectPopup] = useState(false);
+
+            useEffect(() => {
+                if (scene === 0) {
+                    const timer = setTimeout(() => setScene(1), 4500);
+                    return () => clearTimeout(timer);
+                }
+                if (scene === 1) {
+                    const timer = setTimeout(() => setScene(2), 5500);
+                    return () => clearTimeout(timer);
+                }
+            }, [scene]);
+
+            const handleNoClick = () => {
+                setShowRejectPopup(true);
+            };
+
+            const handleSorry = () => {
+                setShowRejectPopup(false);
+            };
+
+            return (
+                <div className="fixed inset-0 bg-pink-50 flex flex-col items-center justify-center p-6 z-50 overflow-hidden">
+                    <AmbientParticles />
+                    
+                    <AnimatePresence>
+                        {showRejectPopup && (
+                            <motion.div 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 backdrop-blur-sm"
+                            >
+                                <motion.div 
+                                    initial={{ scale: 0.8, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    exit={{ scale: 0.8, opacity: 0 }}
+                                    className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl"
+                                >
+                                    <div className="text-6xl mb-4">🥹</div>
+                                    <h3 className="text-xl font-bold text-gray-700 mb-6 leading-relaxed">
+                                        Kenapaaa sayanggg gamauuu liattt? <br/>Gasukaaa yaaa? 🥹
+                                    </h3>
+                                    <button 
+                                        onClick={handleSorry}
+                                        className="bg-pink-500 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-pink-600 transition w-full"
+                                    >
+                                        Maaf sayang, iya aku liat 💖
+                                    </button>
+                                </motion.div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    <AnimatePresence mode="wait">
+                        {/* SCENE 1 */}
+                        {scene === 0 && (
+                            <motion.div 
+                                key="scene1"
+                                initial={{ opacity: 0, scale: 0.8, y: 50 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -50 }}
+                                transition={{ duration: 0.8, ease: "easeOut" }}
+                                className="flex flex-col items-center text-center max-w-md relative z-10"
+                            >
+                                <motion.div 
+                                    className="bg-white p-4 rounded-3xl shadow-lg mb-6 relative"
+                                    initial={{ opacity: 0, scale: 0 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: 0.5, type: "spring" }}
+                                >
+                                    <p className="text-pink-600 font-bold text-lg leading-relaxed typing-effect">
+                                        "Halooo sayangggg XD,<br/>belakangannn iniii sayanggg sibukkk bangettt yaaaa?"
+                                    </p>
+                                    <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white rotate-45"></div>
+                                </motion.div>
+                                <motion.img 
+                                    src={IMAGES.meNormal} 
+                                    alt="Me" 
+                                    className="w-32 h-32 rounded-full border-4 border-white shadow-xl object-cover"
+                                    animate={{ y: [0, -10, 0] }}
+                                    transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                                />
+                            </motion.div>
+                        )}
+                        {/* SCENE 2 */}
+                        {scene === 1 && (
+                            <motion.div 
+                                key="scene2"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.8 }}
+                                className="flex flex-col items-center text-center max-w-md relative z-10"
+                            >
+                                <motion.div 
+                                    className="bg-white p-4 rounded-3xl shadow-lg mb-6 relative"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                >
+                                    <p className="text-purple-600 font-semibold text-lg leading-relaxed">
+                                        "Pasti sayang capek banget yaaa? <br/>
+                                        Mungkin gabisa bantu banyak tapi aku bikin web ini buat semangatin kamuuu..."
+                                    </p>
+                                    <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white rotate-45"></div>
+                                </motion.div>
+                                <motion.img 
+                                    src={IMAGES.meThinking} 
+                                    alt="Me Thinking" 
+                                    className="w-32 h-32 rounded-full border-4 border-white shadow-xl object-cover grayscale-[20%]"
+                                    animate={{ rotate: [0, 2, 0, -2, 0] }}
+                                    transition={{ repeat: Infinity, duration: 4 }}
+                                />
+                            </motion.div>
+                        )}
+                        {/* SCENE 3 */}
+                        {scene === 2 && (
+                            <motion.div 
+                                key="scene3"
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="flex flex-col items-center text-center max-w-md w-full relative z-10"
+                            >
+                                <div className="bg-white p-6 rounded-full shadow-xl mb-8 border-4 border-pink-200">
+                                    <h2 className="text-2xl font-bold text-pink-500">
+                                        Sayang mau kann liattt? Hehehe :D
+                                    </h2>
+                                </div>
+                                <div className="flex gap-4">
+                                    <motion.button 
+                                        whileHover={{ scale: 1.1 }}
+                                        whileTap={{ scale: 0.9 }}
+                                        onClick={onComplete}
+                                        className="bg-pink-400 hover:bg-pink-500 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-colors text-lg"
+                                    >
+                                        💖 Iyaaa, aku mwww
+                                    </motion.button>
+                                    <motion.button 
+                                        whileHover={{ x: [0, -5, 5, -5, 5, 0] }}
+                                        onClick={handleNoClick}
+                                        className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-3 px-8 rounded-full shadow-md transition-colors text-lg"
+                                    >
+                                        😝 Engga ah, alay
+                                    </motion.button>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            );
+        };
+
+        // --- ENVELOPES SECTION WITH TYPING ---
+        const EnvelopesSection = () => {
+            const [showEnvelopes, setShowEnvelopes] = useState(false);
+            const [typingText, setTypingText] = useState("");
+            const [isTypingDone, setIsTypingDone] = useState(false);
+            const fullText = "aku ngetik ini sambil mikirin kamu…";
+            
+            // Envelope tracking
+            const [openedSet, setOpenedSet] = useState(new Set());
+            const allOpened = openedSet.size === 3;
+
+            useEffect(() => {
+                // Typing animation effect
+                let index = 0;
+                const typeInterval = setInterval(() => {
+                    if (index < fullText.length) {
+                        setTypingText((prev) => prev + fullText.charAt(index));
+                        index++;
+                    } else {
+                        clearInterval(typeInterval);
+                        setTimeout(() => setIsTypingDone(true), 1500); // Wait 1.5s after typing
+                    }
+                }, 100);
+
+                return () => clearInterval(typeInterval);
+            }, []);
+
+            useEffect(() => {
+                if (isTypingDone) {
+                    setTimeout(() => setShowEnvelopes(true), 500);
+                }
+            }, [isTypingDone]);
+
+            const handleEnvelopeOpen = (id) => {
+                setOpenedSet(prev => new Set(prev).add(id));
+            };
+
+            return (
+                <div className="min-h-[400px] flex flex-col items-center justify-center relative">
+                    {/* TYPING PHASE */}
+                    <AnimatePresence>
+                        {!showEnvelopes && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                className="absolute text-center"
+                            >
+                                <p className="text-xl md:text-2xl text-pink-400 font-medium italic typing-cursor">
+                                    {typingText}
+                                </p>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    {/* ENVELOPES PHASE */}
+                    <AnimatePresence>
+                        {showEnvelopes && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 30 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.8 }}
+                                className="w-full"
+                            >
+                                <div className="text-center mb-12">
+                                    <h1 className="text-4xl font-bold text-pink-400 mb-2">Cheer Up, Sayang!</h1>
+                                    <p className="text-gray-500">Open these envelopes, I hid something inside...</p>
+                                </div>
+
+                                <div className="flex flex-wrap justify-center gap-8 mb-8">
+                                    <Envelope 
+                                        id="1" 
+                                        message="Sayang aku mah STRONK, UKK Siap Siap Dibantai Micha YGY 💪" 
+                                        onOpen={() => handleEnvelopeOpen(1)}
+                                    />
+                                    <Envelope 
+                                        id="2" 
+                                        message="Jangan lupa istirahat ya cantik, kesehatan nomor 1 Sayangggg! 😴" 
+                                        onOpen={() => handleEnvelopeOpen(2)}
+                                    />
+                                    <Envelope 
+                                        id="3" 
+                                        message="I loveeeee youuuu soooo muchhh sayangggg, Semangattt yaaa sesibukkk apapunnn, You're so closeeee to Reaching your Goalss "
+                                        onOpen={() => handleEnvelopeOpen(3)}
+                                    />
+                                </div>
+
+                                {/* COMPLETION MESSAGE */}
+                                <AnimatePresence>
+                                    {allOpened && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="text-center mt-4 mb-12"
+                                        >
+                                            <p className="text-pink-500 font-medium text-lg bg-pink-50 inline-block px-6 py-2 rounded-full shadow-sm border border-pink-100">
+                                                makasih udah baca semuanya sayang 🫶
+                                            </p>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            );
+        };
+
+        const VerseCarousel = () => {
+            const [index, setIndex] = useState(0);
+
+            useEffect(() => {
+                const interval = setInterval(() => {
+                    setIndex((prev) => (prev + 1) % BIBLE_VERSES.length);
+                }, 5000); 
+                return () => clearInterval(interval);
+            }, []);
+
+            return (
+                <div className="w-full bg-gradient-to-r from-pink-100 to-purple-100 py-8 px-4 rounded-b-[3rem] shadow-sm mb-10 relative z-20">
+                    <div className="max-w-2xl mx-auto h-32 relative flex items-center justify-center text-center">
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={index}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                transition={{ duration: 0.5 }}
+                                className="absolute w-full px-6"
+                            >
+                                <p className="text-xl md:text-2xl font-bold text-gray-700 italic font-serif">
+                                    "{BIBLE_VERSES[index].text}"
+                                </p>
+                                <p className="text-sm text-pink-500 mt-2 font-semibold">
+                                    — {BIBLE_VERSES[index].ref}
+                                </p>
+                            </motion.div>
+                        </AnimatePresence>
+                    </div>
+                </div>
+            );
+        };
+
+        const Envelope = ({ id, color, message, onOpen }) => {
+            const [isOpen, setIsOpen] = useState(false);
+            
+            const handleClick = () => {
+                if (!isOpen) {
+                    setIsOpen(true);
+                    if(onOpen) onOpen();
+                } else {
+                    setIsOpen(false);
+                }
+            };
+
+            return (
+                <div 
+                    className="relative w-full max-w-[280px] h-32 cursor-pointer mb-16 mx-auto"
+                    onClick={handleClick}
+                >
+                    <div className={`envelope-wrapper w-full h-full`}>
+                        <div className={`envelope w-full h-full bg-pink-300 rounded-b-lg shadow-lg absolute bottom-0 left-0 flex items-center justify-center ${isOpen ? 'open' : ''}`}>
+                            
+                            <div className="flap absolute top-0 left-0 w-full h-0 border-l-[140px] border-r-[140px] border-t-[90px] border-l-transparent border-r-transparent border-t-pink-500 rounded-t-lg origin-top z-40"></div>
+
+                            <div className="letter absolute bottom-0 left-4 right-4 bg-white h-[90%] rounded-lg shadow-md p-4 flex flex-col items-center justify-center text-center border-2 border-dashed border-pink-200">
+                                <span className="text-xs text-gray-400 uppercase tracking-widest mb-1">Message {id}</span>
+                                <p className="text-pink-600 font-handwriting text-sm font-medium">{message}</p>
+                            </div>
+                            
+                            <div className="pocket absolute inset-0 z-20 pointer-events-none">
+                                <div className="absolute bottom-0 w-full h-0 border-l-[140px] border-r-[140px] border-b-[80px] border-l-transparent border-r-transparent border-b-pink-400 rounded-b-lg"></div>
+                            </div>
+
+                            <div className="absolute bottom-4 z-50 text-white font-bold tracking-widest pointer-events-none drop-shadow-md">
+                                {isOpen ? "" : "OPEN ME"}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const ArtSection = () => {
+            return (
+                <div className="py-12 px-4 max-w-5xl mx-auto relative z-20">
+                    <h3 className="text-center text-3xl font-bold text-pink-400 mb-8">Rumus Keren Buatan Cendi 🎨</h3>
+                    
+                    <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
+                        {/* 1. Her Photo */}
+                        <motion.div 
+                            className="flex flex-col items-center"
+                            whileHover={{ scale: 1.05 }}
+                        >
+                            <div className="relative group">
+                                <div className="absolute -inset-1 bg-gradient-to-r from-pink-300 to-purple-300 rounded-2xl blur opacity-75"></div>
+                                <img src={IMAGES.her} alt="Her" className="relative w-32 h-32 md:w-40 md:h-40 rounded-2xl object-cover border-4 border-white shadow-xl" />
+                            </div>
+                            <p className="mt-4 font-bold text-gray-600 text-sm">You (Micha)</p>
+                        </motion.div>
+
+                        <motion.div 
+                            className="text-4xl md:text-6xl font-black text-pink-300 select-none"
+                            animate={{ scale: [1, 1.2, 1] }}
+                            transition={{ repeat: Infinity, duration: 2 }}
+                        >
+                            +
+                        </motion.div>
+
+                        {/* 2. Cat */}
+                        <motion.div 
+                            className="flex flex-col items-center"
+                            whileHover={{ rotate: 5 }}
+                        >
+                            <img src={IMAGES.cat} alt="Cat" className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-pink-200 shadow-lg" />
+                            <p className="mt-4 font-bold text-gray-600 text-sm">Munchkin Kitty</p>
+                        </motion.div>
+
+                        <motion.div 
+                            className="text-4xl md:text-6xl font-black text-pink-300 select-none"
+                            animate={{ scale: [1, 1.2, 1] }}
+                            transition={{ repeat: Infinity, duration: 2, delay: 0.5 }}
+                        >
+                            =
+                        </motion.div>
+
+                        {/* 3. Drawing */}
+                        <motion.div 
+                            className="flex flex-col items-center"
+                            whileHover={{ scale: 1.05 }}
+                        >
+                            <div className="relative w-40 h-40 md:w-48 md:h-48 bg-white p-2 rounded-lg shadow-lg border border-gray-200 rotate-2">
+                                <div className="w-full h-full bg-gray-100 flex items-center justify-center rounded overflow-hidden relative">
+                                    <img src={IMAGES.drawing} alt="My Drawing" className="w-full h-full object-cover opacity-80" />
+                                </div>
+                            </div>
+                            <p className="mt-4 font-bold text-gray-600 text-sm">My Masterpiece, I call it : MichaCing (Micha Kucing) ✨</p>
+                        </motion.div>
+
+                    </div>
+                </div>
+            );
+        };
+
+        const RoseBouquet = () => {
+            const mountRef = useRef(null);
+
+            useEffect(() => {
+                const width = mountRef.current.clientWidth;
+                const height = 500; 
+
+                const scene = new THREE.Scene();
+                scene.background = null; 
+
+                const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+                camera.position.set(0, 3, 6);
+                camera.lookAt(0, 0, 0);
+
+                const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setSize(width, height);
+                renderer.shadowMap.enabled = true;
+                renderer.setClearColor(0x000000, 0); 
+                mountRef.current.appendChild(renderer.domElement);
+
+                // Lighting
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+                scene.add(ambientLight);
+                
+                const dirLight = new THREE.DirectionalLight(0xffcccc, 0.8);
+                dirLight.position.set(5, 10, 7);
+                dirLight.castShadow = true;
+                scene.add(dirLight);
+
+                const bouquetGroup = new THREE.Group();
+                bouquetGroup.position.y = -1; 
+
+                const createRose = (color, scale = 1) => {
+                    const roseGroup = new THREE.Group();
+                    const petalMat = new THREE.MeshStandardMaterial({ 
+                        color: color, 
+                        roughness: 0.4, 
+                        metalness: 0.1,
+                        side: THREE.DoubleSide
+                    });
+
+                    const budGeo = new THREE.ConeGeometry(0.2, 0.4, 8);
+                    const bud = new THREE.Mesh(budGeo, petalMat);
+                    bud.position.y = 0.1;
+                    roseGroup.add(bud);
+                    
+                    const stemGeo = new THREE.CylinderGeometry(0.04, 0.02, 3.5, 8);
+                    const stemMat = new THREE.MeshStandardMaterial({ color: 0x2e8b57, roughness: 0.9 });
+                    const stem = new THREE.Mesh(stemGeo, stemMat);
+                    stem.position.y = -1.75; 
+                    roseGroup.add(stem);
+
+                    const leafGeo = new THREE.ConeGeometry(0.1, 0.3, 4);
+                    leafGeo.scale(1, 0.1, 2); 
+                    const leaf1 = new THREE.Mesh(leafGeo, stemMat);
+                    leaf1.position.set(0.05, -0.8, 0);
+                    leaf1.rotation.z = -Math.PI/3;
+                    roseGroup.add(leaf1);
+                    
+                    const leaf2 = new THREE.Mesh(leafGeo, stemMat);
+                    leaf2.position.set(-0.05, -1.2, 0);
+                    leaf2.rotation.z = Math.PI/3;
+                    leaf2.rotation.y = 1;
+                    roseGroup.add(leaf2);
+
+                    const createPetalRing = (count, radius, yPos, angleOff) => {
+                        for (let i = 0; i < count; i++) {
+                            const geo = new THREE.SphereGeometry(radius, 8, 8, 0, Math.PI*2, 0, 1.5);
+                            const mesh = new THREE.Mesh(geo, petalMat);
+                            mesh.position.y = yPos;
+                            mesh.rotation.x = 1.5;
+                            mesh.rotation.y = (i/count) * Math.PI*2 + angleOff;
+                            mesh.scale.set(1, 0.3, 1);
+                            roseGroup.add(mesh);
+                        }
+                    }
+
+                    createPetalRing(3, 0.25, 0.15, 0);
+                    createPetalRing(5, 0.35, 0.10, 0.5);
+                    createPetalRing(6, 0.45, 0.05, 0);
+
+                    roseGroup.scale.set(scale, scale, scale);
+                    return roseGroup;
+                };
+
+                const wrapperGroup = new THREE.Group();
+
+                const innerGeo = new THREE.CylinderGeometry(0.8, 0.1, 1.5, 32, 1, true);
+                const innerMat = new THREE.MeshStandardMaterial({ 
+                    color: 0xffe4e1, 
+                    side: THREE.DoubleSide,
+                });
+                const innerWrap = new THREE.Mesh(innerGeo, innerMat);
+                innerWrap.position.y = -0.5; 
+                wrapperGroup.add(innerWrap);
+
+                const outerGeo = new THREE.CylinderGeometry(1.4, 0.2, 3.2, 32, 1, true);
+                const outerMat = new THREE.MeshStandardMaterial({ 
+                    color: 0xffffff, 
+                    transparent: true, 
+                    opacity: 0.65, 
+                    side: THREE.DoubleSide,
+                    depthWrite: false, 
+                });
+                
+                const outerWrap = new THREE.Mesh(outerGeo, outerMat);
+                outerWrap.position.y = 0.1;
+                wrapperGroup.add(outerWrap);
+
+                const outerWrap2 = new THREE.Mesh(outerGeo, outerMat);
+                outerWrap2.position.y = 0.1;
+                outerWrap2.rotation.y = Math.PI; 
+                outerWrap2.scale.set(1.05, 1, 1.05);
+                wrapperGroup.add(outerWrap2);
+
+                const ribbonGeo = new THREE.TorusGeometry(0.3, 0.05, 8, 32);
+                const ribbonMat = new THREE.MeshStandardMaterial({ color: 0xff1493 });
+                const ribbon = new THREE.Mesh(ribbonGeo, ribbonMat);
+                ribbon.position.y = -0.8;
+                ribbon.rotation.x = Math.PI/2;
+                ribbon.scale.set(1, 1, 1.5);
+                wrapperGroup.add(ribbon);
+
+                bouquetGroup.add(wrapperGroup);
+
+                const flowerHeight = 1.5; 
+                
+                const positions = [
+                    {x: 0, y: 0.2, z: 0},
+                    {x: 0.6, y: 0, z: 0},
+                    {x: -0.6, y: 0, z: 0},
+                    {x: 0, y: 0, z: 0.6},
+                    {x: 0, y: 0, z: -0.6},
+                    {x: 0.4, y: 0.1, z: 0.4},
+                    {x: -0.4, y: 0.1, z: 0.4},
+                    {x: 0.4, y: 0.1, z: -0.4},
+                    {x: -0.4, y: 0.1, z: -0.4},
+                ];
+
+                positions.forEach(p => {
+                    const rose = createRose(0xe32636, 0.8);
+                    rose.position.set(p.x, flowerHeight + p.y, p.z);
+                    
+                    const currentPos = rose.position.clone();
+                    const targetPos = new THREE.Vector3(0, -1.5, 0); 
+                    const direction = new THREE.Vector3().subVectors(targetPos, currentPos).normalize();
+                    const localDown = new THREE.Vector3(0, -1, 0);
+                    
+                    rose.quaternion.setFromUnitVectors(localDown, direction);
+                    
+                    const roll = Math.random() * Math.PI * 2;
+                    const rollQ = new THREE.Quaternion();
+                    rollQ.setFromAxisAngle(new THREE.Vector3(0, 1, 0), roll);
+                    rose.quaternion.multiply(rollQ);
+
+                    bouquetGroup.add(rose);
+                });
+
+                const particlesGeo = new THREE.BufferGeometry();
+                const particleCount = 200;
+                const pPos = new Float32Array(particleCount * 3);
+                for(let i=0; i<particleCount*3; i+=3) {
+                    pPos[i] = (Math.random()-0.5) * 2; 
+                    pPos[i+1] = flowerHeight + 0.5 + (Math.random()-0.5); 
+                    pPos[i+2] = (Math.random()-0.5) * 2; 
+                }
+                particlesGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+                const particlesMat = new THREE.PointsMaterial({color: 0xffffff, size: 0.05});
+                const particles = new THREE.Points(particlesGeo, particlesMat);
+                bouquetGroup.add(particles);
+
+                scene.add(bouquetGroup);
+
+                const animate = () => {
+                    requestAnimationFrame(animate);
+                    bouquetGroup.rotation.y += 0.003;
+                    renderer.render(scene, camera);
+                };
+
+                animate();
+
+                return () => {
+                    if (mountRef.current) {
+                        mountRef.current.innerHTML = '';
+                    }
+                };
+            }, []);
+
+            return <div ref={mountRef} className="w-full h-[500px] rounded-3xl overflow-hidden cursor-pointer touch-none flex items-center justify-center relative z-20" />;
+        };
+
+        const FallingRoses = ({ active }) => {
+            if (!active) return null;
+            const roses = Array.from({ length: 30 }).map((_, i) => ({
+                id: i,
+                left: Math.random() * 100 + 'vw',
+                delay: Math.random() * 2 + 's',
+                duration: Math.random() * 3 + 3 + 's' 
+            }));
+
+            return (
+                <>
+                    {roses.map(rose => (
+                        <div 
+                            key={rose.id}
+                            className="falling-rose text-4xl"
+                            style={{
+                                left: rose.left,
+                                animationDuration: rose.duration,
+                                animationDelay: rose.delay
+                            }}
+                        >
+                            🌹
+                        </div>
+                    ))}
+                </>
+            );
+        };
+
+        const App = () => {
+            const [showIntro, setShowIntro] = useState(true);
+            const [showFallingRoses, setShowFallingRoses] = useState(false);
+            const [showModal, setShowModal] = useState(false);
+            const [showVideoPage, setShowVideoPage] = useState(false);
+
+            const handleRoseClick = () => {
+                setShowFallingRoses(true);
+                setShowModal(true);
+            };
+
+            const closeModal = () => {
+                setShowModal(false);
+                // Trigger transition to video page after modal closes
+                setTimeout(() => setShowVideoPage(true), 800);
+            };
+
+            if (showIntro) {
+                return <IntroSequence onComplete={() => setShowIntro(false)} />;
+            }
+
+            if (showVideoPage) {
+                return (
+                    <>
+                        <AmbientParticles />
+                        <MusicPlayer autoPause={true} /> {/* Pause music when video starts */}
+                        <VideoPage />
+                    </>
+                );
+            }
+
+            return (
+                <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 1 }}
+                    className="min-h-screen pb-12 relative overflow-hidden"
+                >
+                    <AmbientParticles />
+                    <MusicPlayer autoPause={false} />
+                    <FallingRoses active={showFallingRoses} />
+
+                    <AnimatePresence>
+                        {showModal && (
+                            <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+                                <motion.div 
+                                    initial={{ scale: 0.5, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    exit={{ scale: 0.5, opacity: 0 }}
+                                    className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl border-4 border-pink-300 relative"
+                                >
+                                    <button 
+                                        onClick={closeModal}
+                                        className="absolute top-2 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold"
+                                    >
+                                        &times;
+                                    </button>
+                                    <div className="text-5xl mb-4">😚</div>
+                                    <h3 className="text-2xl font-bold text-pink-500 mb-2">FOR YOU</h3>
+                                    <p className="text-gray-600 mb-4 leading-relaxed">
+                                        People keep asking me, where are the roses? <br/>
+                                        Well I bought all the roses in the world and put them here!<br/>
+                                        <span className="font-bold text-pink-600">Only for Micha! :D</span>
+                                    </p>
+                                    <button 
+                                        onClick={closeModal}
+                                        className="bg-pink-500 text-white px-6 py-2 rounded-full font-bold shadow-lg hover:bg-pink-600 transition"
+                                    >
+                                        Awww, thanks!
+                                    </button>
+                                </motion.div>
+                            </div>
+                        )}
+                    </AnimatePresence>
+
+                    <VerseCarousel />
+
+                    <div className="container mx-auto px-4 relative z-10">
+                        <EnvelopesSection />
+
+                        <ArtSection />
+
+                        <div className="mt-16 flex flex-col items-center relative z-20">
+                            <div className="absolute top-0 text-pink-200 text-9xl font-bold opacity-20 select-none z-0">ROSES</div>
+                            <h2 className="text-2xl font-bold text-pink-500 z-10 relative">Bouquet Mawar Virtual Buat Kamu :D</h2>
+                            <p className="text-gray-400 text-sm mb-4 z-10 relative">Lasts forever, just like my love (eaaa)</p>
+                            
+                            <div className="w-full max-w-lg bg-white/50 backdrop-blur-sm rounded-3xl shadow-xl border-4 border-pink-100 p-2 z-10 relative">
+                                <RoseBouquet />
+                            </div>
+
+                            <motion.button 
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={handleRoseClick}
+                                className="mt-8 bg-gradient-to-r from-red-400 to-pink-500 text-white text-xl font-bold py-4 px-12 rounded-full shadow-lg z-10 relative ring-4 ring-pink-200"
+                            >
+                                Click Me! 🌹
+                            </motion.button>
+                        </div>
+
+                    </div>
+
+                    <footer className="mt-20 py-8 text-center text-pink-400 font-medium bg-pink-50 rounded-t-3xl relative z-20">
+                        <p>Made with love, by Sandy 💙</p>
+                    </footer>
+
+                </motion.div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
